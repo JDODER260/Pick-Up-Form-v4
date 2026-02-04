@@ -1,10 +1,10 @@
 ==============================
-Pick Up Form — Version 4.0.0
+Pick Up Form — V4
 ==============================
 
 Pick Up & Delivery App for Double R Sharpening (Flutter)
 
-This mobile app (v4.0.0) is a cross-platform Flutter application that manages pickup forms and delivery receipts. It works offline—data is stored locally in JSON files so the app retains settings, routes, deliveries, and PO data across app restarts.
+This mobile app (v4) is a cross-platform Flutter application that manages pickup forms and delivery receipts. It works offline—data is stored locally in JSON files so the app retains settings, routes, deliveries, and PO data across app restarts.
 
 How to download
 ===============

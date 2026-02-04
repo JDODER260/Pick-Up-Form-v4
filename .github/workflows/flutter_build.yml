@@ -1,0 +1,45 @@
+name: Flutter Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter SDK
+        uses: flutter-actions/setup-flutter@v4
+        with:
+          version: "3.38.9"
+          channel: "stable"
+
+      - name: Get dependencies
+        run: flutter pub get
+        working-directory: pick_up_app_v4
+
+      - name: Build APK
+        run: flutter build apk --release
+        working-directory: pick_up_app_v4
+
+      - name: Build AAB
+        run: flutter build appbundle --release
+        working-directory: pick_up_app_v4
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: pick_up_app_v4/build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: pick_up_app_v4/build/app/outputs/bundle/release/app-release.aab

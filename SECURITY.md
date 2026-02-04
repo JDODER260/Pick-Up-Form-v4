@@ -18,7 +18,7 @@ This is the first version of our app built with Flutter/Dart. All previous versi
 ### How to Report
 **DO NOT** create public issues for security vulnerabilities. Instead:
 
-1. **Email**: jdswebsites@gmail.com *(replace with your actual security email)*
+1. **Email**: jdswebsites@gmail.com 
 2. **Subject**: `[SECURITY] pick_up_app_v4 Vulnerability Report`
 3. **Include**:
    - Affected version (e.g., "4.0.0")

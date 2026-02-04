@@ -1,4 +1,4 @@
-import java.util.Properties
+import java.util.Base64
 import java.io.FileInputStream
 
 plugins {
@@ -17,8 +17,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        jvmToolchain(17)
     }
 
     defaultConfig {
@@ -32,27 +32,30 @@ android {
     signingConfigs {
         create("release") {
             // Get values from environment variables (which will be set from GitHub Secrets)
-            keyAlias = System.getenv("KEY_ALIAS") ?: ""
-            keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+            val envKeyAlias = System.getenv("KEY_ALIAS") ?: ""
+            val envKeyPassword = System.getenv("KEY_PASSWORD") ?: ""
+            val envStorePassword = System.getenv("STORE_PASSWORD") ?: ""
+            
+            keyAlias = envKeyAlias
+            keyPassword = envKeyPassword
+            storePassword = envStorePassword
             
             // For storeFile, you need to create the keystore file from a base64 encoded string
             val keystoreBase64 = System.getenv("KEYSTORE_BASE64")
-            if (keystoreBase64 != null) {
+            if (keystoreBase64 != null && keystoreBase64.isNotEmpty()) {
                 // Create keystore file in a temporary location
-                val keystoreFile = File("${project.buildDir}/tmp/keystore.jks")
+                val keystoreFile = File("${project.layout.buildDirectory.get()}/tmp/keystore.jks")
                 keystoreFile.parentFile.mkdirs()
                 
                 // Decode base64 and write to file
-                val keystoreBytes = java.util.Base64.getDecoder().decode(keystoreBase64)
+                val keystoreBytes = Base64.getDecoder().decode(keystoreBase64)
                 keystoreFile.writeBytes(keystoreBytes)
                 
                 storeFile = keystoreFile
             }
             
-            storePassword = System.getenv("STORE_PASSWORD") ?: ""
-            
             // Validate that all required values are present
-            if (keyAlias.isEmpty() || keyPassword.isEmpty() || storePassword.isEmpty()) {
+            if (envKeyAlias.isEmpty() || envKeyPassword.isEmpty() || envStorePassword.isEmpty() || keystoreBase64.isNullOrEmpty()) {
                 logger.warn("Warning: Not all signing config values are available. Release signing may not work.")
             }
         }
@@ -66,7 +69,10 @@ android {
             val storePassword = System.getenv("STORE_PASSWORD")
             val keystoreBase64 = System.getenv("KEYSTORE_BASE64")
             
-            if (keyAlias != null && keyPassword != null && storePassword != null && keystoreBase64 != null) {
+            if (!keyAlias.isNullOrEmpty() && 
+                !keyPassword.isNullOrEmpty() && 
+                !storePassword.isNullOrEmpty() && 
+                !keystoreBase64.isNullOrEmpty()) {
                 signingConfig = signingConfigs.getByName("release")
             } else {
                 logger.warn("Release build will not be signed due to missing secrets")

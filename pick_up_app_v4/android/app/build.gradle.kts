@@ -1,5 +1,6 @@
 import java.util.Properties
 import java.io.FileInputStream
+import java.io.File
 
 plugins {
     id("com.android.application")
@@ -7,11 +8,11 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-val keystoreProperties = Properties()
-val keystorePropertiesFile = rootProject.file("key.properties")
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-}
+// Load signing config only if environment variables exist (GitHub Actions or local dev)
+val keyAliasEnv = System.getenv("KEY_ALIAS")
+val keyPasswordEnv = System.getenv("KEY_PASSWORD")
+val storePasswordEnv = System.getenv("KEYSTORE_PASSWORD")
+val storeFileEnv = System.getenv("KEYSTORE_FILE_PATH") // Path to keystore.jks
 
 android {
     namespace = "com.doublersharpening.pick_up_app_v4"
@@ -37,10 +38,28 @@ android {
 
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
+            // Use environment variables first (CI), fallback to local key.properties
+            if (keyAliasEnv != null && keyPasswordEnv != null && storePasswordEnv != null && storeFileEnv != null) {
+                keyAlias = keyAliasEnv
+                keyPassword = keyPasswordEnv
+                storePassword = storePasswordEnv
+                storeFile = file(storeFileEnv)
+            } else {
+                // fallback for local development
+                val keystoreProperties = Properties()
+                val keystorePropertiesFile = rootProject.file("key.properties")
+                if (keystorePropertiesFile.exists()) {
+                    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+                }
+                keyAlias = keystoreProperties["keyAlias"]?.toString()
+                    ?: throw GradleException("keyAlias missing in key.properties")
+                keyPassword = keystoreProperties["keyPassword"]?.toString()
+                    ?: throw GradleException("keyPassword missing in key.properties")
+                storePassword = keystoreProperties["storePassword"]?.toString()
+                    ?: throw GradleException("storePassword missing in key.properties")
+                storeFile = file(keystoreProperties["storeFile"]?.toString()
+                    ?: throw GradleException("storeFile missing in key.properties"))
+            }
         }
     }
 

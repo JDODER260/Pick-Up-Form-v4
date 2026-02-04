@@ -60,5 +60,5 @@ We won't take legal action against security researchers who:
 
 ---
 
-*Last Updated: [Current Date]*
+*Last Updated: [02/04/26]*
 *Policy Version: 1.0*

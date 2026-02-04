@@ -16,11 +16,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Set up Flutter
+      # 2️⃣ Set up Flutter (use v3)
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@v3
         with:
-          flutter-version: 'stable'  # adjust to your Flutter version
+          flutter-version: "stable"  # now works correctly
+          channel: "stable"           # optional but explicit
 
       # 3️⃣ Get dependencies
       - name: Flutter pub get

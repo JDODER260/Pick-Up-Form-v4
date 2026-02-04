@@ -26,212 +26,251 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
     final pickupProvider = Provider.of<PickupProvider>(context);
 
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'PICKUP MODE',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      appProvider.selectedRoute.isNotEmpty
-                          ? 'Route: ${appProvider.selectedRoute}'
-                          : 'No route selected',
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    if (appProvider.selectedCompany.isNotEmpty) ...[
-                      SizedBox(height: 4),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header Card - Fixed size
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                       Text(
-                        'Company: ${appProvider.selectedCompany}',
+                        'PICKUP MODE',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        appProvider.selectedRoute.isNotEmpty
+                            ? 'Route: ${appProvider.selectedRoute}'
+                            : 'No route selected',
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
-                    ],
-                    SizedBox(height: 8),
-                    Row(
-                      children: [
-                        ElevatedButton(
-                          onPressed: () async {
-                            // Route selection dialog
-                            final routes = Provider.of<AppProvider>(context, listen: false).availableRoutes;
-                            final selected = await showDialog<String?>(
-                              context: context,
-                              builder: (context) => SimpleDialog(
-                                title: Text('Select Route'),
-                                children: routes.map((r) => SimpleDialogOption(
-                                  child: Text(r),
-                                  onPressed: () => Navigator.pop(context, r),
-                                )).toList(),
-                              ),
-                            );
-                            if (selected != null) {
-                              appProvider.selectedRoute = selected;
-                              // Clear selected company when route changes
-                              appProvider.selectedCompany = '';
-                            }
-                          },
-                          child: Text('Select Route'),
-                        ),
-                        SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Open company selection screen
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => CompanySelectionScreen()),
-                            );
-                          },
-                          child: Text('Select Company'),
+                      if (appProvider.selectedCompany.isNotEmpty) ...[
+                        SizedBox(height: 4),
+                        Text(
+                          'Company: ${appProvider.selectedCompany}',
+                          style: Theme.of(context).textTheme.bodyLarge,
                         ),
                       ],
+                      SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () async {
+                              // Route selection dialog
+                              final routes = Provider.of<AppProvider>(context, listen: false).availableRoutes;
+                              final selected = await showDialog<String?>(
+                                context: context,
+                                builder: (context) => SimpleDialog(
+                                  title: Text('Select Route'),
+                                  children: routes.map((r) => SimpleDialogOption(
+                                    child: Text(r),
+                                    onPressed: () => Navigator.pop(context, r),
+                                  )).toList(),
+                                ),
+                              );
+                              if (selected != null) {
+                                appProvider.selectedRoute = selected;
+                                // Clear selected company when route changes
+                                appProvider.selectedCompany = '';
+                              }
+                            },
+                            child: Text('Select Route'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              // Open company selection screen
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => CompanySelectionScreen()),
+                              );
+                            },
+                            child: Text('Select Company'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 8),
+
+              // Action Buttons - Fixed height
+              SizedBox(
+                height: 110,
+                child: GridView.count(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                  childAspectRatio: 1.2,
+                  children: [
+                    _buildActionCard(
+                      context: context,
+                      icon: Icons.add,
+                      title: 'Add New PO',
+                      onTap: () {
+                        Provider.of<PickupProvider>(context, listen: false).setEditingIndex(null);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AddPOScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildActionCard(
+                      context: context,
+                      icon: Icons.cloud_upload,
+                      title: 'Upload Selected',
+                      onTap: () async {
+                        try {
+                          await pickupProvider.uploadSelected(appProvider.uploadUrl);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Uploaded selected POs'), backgroundColor: Colors.green),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Upload failed: $e'), backgroundColor: Colors.red),
+                          );
+                        }
+                      },
+                    ),
+                    _buildActionCard(
+                      context: context,
+                      icon: Icons.delete,
+                      title: 'Delete Selected',
+                      onTap: () async {
+                        final count = pickupProvider.selectedCount;
+                        if (count == 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No items selected')));
+                          return;
+                        }
+                        await pickupProvider.deleteSelected();
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Deleted selected POs')));
+                      },
+                    ),
+                    _buildActionCard(
+                      context: context,
+                      icon: Icons.select_all,
+                      title: 'Select All',
+                      onTap: () {
+                        pickupProvider.selectAll();
+                      },
                     ),
                   ],
                 ),
               ),
-            ),
 
-            SizedBox(height: 20),
+              SizedBox(height: 8),
 
-            // Action Buttons
-            GridView.count(
-              shrinkWrap: true,
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.5,
-              children: [
-                _buildActionCard(
-                  context: context,
-                  icon: Icons.add,
-                  title: 'Add New PO',
-                  onTap: () {
-                    Provider.of<PickupProvider>(context, listen: false).setEditingIndex(null);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AddPOScreen(),
+              // PO List Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Pickup Orders',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.refresh),
+                    onPressed: () {
+                      pickupProvider.loadPOs();
+                    },
+                  ),
+                ],
+              ),
+
+              // PO List - Use Flexible instead of Expanded
+              Flexible(
+                child: pickupProvider.pos.isEmpty
+                    ? Center(
+                  child: Text(
+                    'No pickup orders yet',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Colors.grey,
+                    ),
+                  ),
+                )
+                    : ListView.builder(
+                  itemCount: pickupProvider.pos.length,
+                  itemBuilder: (context, index) {
+                    final po = pickupProvider.pos[index];
+                    final selected = pickupProvider.selectedIndices.contains(index);
+                    return Card(
+                      margin: EdgeInsets.symmetric(vertical: 4),
+                      child: ListTile(
+                        leading: Checkbox(
+                          value: selected,
+                          onChanged: (_) => pickupProvider.toggleSelection(index),
+                        ),
+                        title: Text(
+                          po.description,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${po.company} • ${po.route} • Qty: ${po.quantity}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Uploaded: ${po.uploaded ? 'Yes' : 'No'}',
+                              style: TextStyle(
+                                color: po.uploaded ? Colors.green : Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: () {
+                                pickupProvider.setEditingIndex(index);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => AddPOScreen()),
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: () async {
+                                await pickupProvider.deletePO(index);
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('PO deleted')));
+                              },
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
                 ),
-                _buildActionCard(
-                  context: context,
-                  icon: Icons.cloud_upload,
-                  title: 'Upload Selected',
-                  onTap: () async {
-                    try {
-                      await pickupProvider.uploadSelected(appProvider.uploadUrl);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Uploaded selected POs'), backgroundColor: Colors.green),
-                      );
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Upload failed: $e'), backgroundColor: Colors.red),
-                      );
-                    }
-                  },
-                ),
-                _buildActionCard(
-                  context: context,
-                  icon: Icons.delete,
-                  title: 'Delete Selected',
-                  onTap: () async {
-                    final count = pickupProvider.selectedCount;
-                    if (count == 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('No items selected')));
-                      return;
-                    }
-                    await pickupProvider.deleteSelected();
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Deleted selected POs')));
-                  },
-                ),
-                _buildActionCard(
-                  context: context,
-                  icon: Icons.select_all,
-                  title: 'Select All',
-                  onTap: () {
-                    pickupProvider.selectAll();
-                  },
-                ),
-              ],
-            ),
-
-            SizedBox(height: 20),
-
-            // PO List Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Pickup Orders',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.refresh),
-                  onPressed: () {
-                    pickupProvider.loadPOs();
-                  },
-                ),
-              ],
-            ),
-
-            // PO List
-            Expanded(
-              child: ListView.builder(
-                itemCount: pickupProvider.pos.length,
-                itemBuilder: (context, index) {
-                  final po = pickupProvider.pos[index];
-                  final selected = pickupProvider.selectedIndices.contains(index);
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 4),
-                    child: ListTile(
-                      leading: Checkbox(
-                        value: selected,
-                        onChanged: (_) => pickupProvider.toggleSelection(index),
-                      ),
-                      title: Text(po.description),
-                      subtitle: Text('${po.company} • ${po.route} • Qty: ${po.quantity}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.edit),
-                            onPressed: () {
-                              pickupProvider.setEditingIndex(index);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => AddPOScreen()),
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () async {
-                              await pickupProvider.deletePO(index);
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('PO deleted')));
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -249,21 +288,28 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(4.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 32),
-              SizedBox(height: 8),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge,
+              Icon(icon, size: 20),
+              SizedBox(height: 4),
+              Flexible(
+                child: Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 12,
+                  ),
+                ),
               ),
             ],
           ),
         ),
       ),
     );
+
   }
 }

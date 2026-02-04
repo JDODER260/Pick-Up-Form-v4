@@ -165,7 +165,7 @@
     },
     {
       "name": "hooks",
-      "rootUri": "file:///C:/Users/jdode/AppData/Local/Pub/Cache/hosted/pub.dev/hooks-1.0.0",
+      "rootUri": "file:///C:/Users/jdode/AppData/Local/Pub/Cache/hosted/pub.dev/hooks-1.0.1",
       "packageUri": "lib/",
       "languageVersion": "3.9"
     },
@@ -219,7 +219,7 @@
     },
     {
       "name": "lints",
-      "rootUri": "file:///C:/Users/jdode/AppData/Local/Pub/Cache/hosted/pub.dev/lints-6.0.0",
+      "rootUri": "file:///C:/Users/jdode/AppData/Local/Pub/Cache/hosted/pub.dev/lints-6.1.0",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
@@ -645,8 +645,8 @@
     }
   ],
   "generator": "pub",
-  "generatorVersion": "3.10.7",
+  "generatorVersion": "3.10.8",
   "flutterRoot": "file:///C:/Users/jdode/develop/flutter",
-  "flutterVersion": "3.38.7",
+  "flutterVersion": "3.38.9",
   "pubCache": "file:///C:/Users/jdode/AppData/Local/Pub/Cache"
 }

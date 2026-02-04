@@ -1,18 +1,11 @@
-import java.util.Properties
+import java.util.Base64
 import java.io.FileInputStream
-import java.io.File
 
 plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
 }
-
-// Load signing config only if environment variables exist (GitHub Actions or local dev)
-val keyAliasEnv = System.getenv("KEY_ALIAS")
-val keyPasswordEnv = System.getenv("KEY_PASSWORD")
-val storePasswordEnv = System.getenv("KEYSTORE_PASSWORD")
-val storeFileEnv = System.getenv("KEYSTORE_FILE_PATH") // Path to keystore.jks
 
 android {
     namespace = "com.doublersharpening.pick_up_app_v4"
@@ -24,8 +17,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        jvmToolchain(17)
     }
 
     defaultConfig {
@@ -38,34 +31,53 @@ android {
 
     signingConfigs {
         create("release") {
-            // Use environment variables first (CI), fallback to local key.properties
-            if (keyAliasEnv != null && keyPasswordEnv != null && storePasswordEnv != null && storeFileEnv != null) {
-                keyAlias = keyAliasEnv
-                keyPassword = keyPasswordEnv
-                storePassword = storePasswordEnv
-                storeFile = file(storeFileEnv)
-            } else {
-                // fallback for local development
-                val keystoreProperties = Properties()
-                val keystorePropertiesFile = rootProject.file("key.properties")
-                if (keystorePropertiesFile.exists()) {
-                    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-                }
-                keyAlias = keystoreProperties["keyAlias"]?.toString()
-                    ?: throw GradleException("keyAlias missing in key.properties")
-                keyPassword = keystoreProperties["keyPassword"]?.toString()
-                    ?: throw GradleException("keyPassword missing in key.properties")
-                storePassword = keystoreProperties["storePassword"]?.toString()
-                    ?: throw GradleException("storePassword missing in key.properties")
-                storeFile = file(keystoreProperties["storeFile"]?.toString()
-                    ?: throw GradleException("storeFile missing in key.properties"))
+            // Get values from environment variables (which will be set from GitHub Secrets)
+            val envKeyAlias = System.getenv("KEY_ALIAS") ?: ""
+            val envKeyPassword = System.getenv("KEY_PASSWORD") ?: ""
+            val envStorePassword = System.getenv("STORE_PASSWORD") ?: ""
+
+            keyAlias = envKeyAlias
+            keyPassword = envKeyPassword
+            storePassword = envStorePassword
+
+            // For storeFile, you need to create the keystore file from a base64 encoded string
+            val keystoreBase64 = System.getenv("KEYSTORE_BASE64")
+            if (keystoreBase64 != null && keystoreBase64.isNotEmpty()) {
+                // Create keystore file in a temporary location
+                val keystoreFile = File("${project.layout.buildDirectory.get()}/tmp/keystore.jks")
+                keystoreFile.parentFile.mkdirs()
+
+                // Decode base64 and write to file
+                val keystoreBytes = Base64.getDecoder().decode(keystoreBase64)
+                keystoreFile.writeBytes(keystoreBytes)
+
+                storeFile = keystoreFile
+            }
+
+            // Validate that all required values are present
+            if (envKeyAlias.isEmpty() || envKeyPassword.isEmpty() || envStorePassword.isEmpty() || keystoreBase64.isNullOrEmpty()) {
+                logger.warn("Warning: Not all signing config values are available. Release signing may not work.")
             }
         }
     }
 
     buildTypes {
         getByName("release") {
-            signingConfig = signingConfigs.getByName("release")
+            // Only apply signing config if all required values are available
+            val keyAlias = System.getenv("KEY_ALIAS")
+            val keyPassword = System.getenv("KEY_PASSWORD")
+            val storePassword = System.getenv("STORE_PASSWORD")
+            val keystoreBase64 = System.getenv("KEYSTORE_BASE64")
+
+            if (!keyAlias.isNullOrEmpty() &&
+                !keyPassword.isNullOrEmpty() &&
+                !storePassword.isNullOrEmpty() &&
+                !keystoreBase64.isNullOrEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+            } else {
+                logger.warn("Release build will not be signed due to missing secrets")
+            }
+
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

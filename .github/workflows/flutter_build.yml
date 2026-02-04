@@ -23,6 +23,29 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
         working-directory: pick_up_app_v4
+      - name: Set up keystore
+        run: |
+          echo "$KEYSTORE_FILE_BASE64" | base64 --decode > pick_up_app_v4/pickup_delivery_release.jks
+        shell: bash
+      
+      - name: Build APK
+        run: flutter build apk --release
+        working-directory: pick_up_app_v4
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_FILE_PATH: pick_up_app_v4/pickup_delivery_release.jks
+      
+      - name: Build AAB
+        run: flutter build appbundle --release
+        working-directory: pick_up_app_v4
+        env:
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_FILE_PATH: pick_up_app_v4/pickup_delivery_release.jks
+
 
       - name: Build APK
         run: flutter build apk --release

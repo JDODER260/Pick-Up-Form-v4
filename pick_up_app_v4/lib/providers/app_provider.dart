@@ -16,7 +16,7 @@ class AppProvider with ChangeNotifier {
   String _selectedRoute = '';
   String _selectedCompany = '';
   String _driverId = '';
-  String _currentVersion = '4.0.0';
+  String _currentVersion = '4.0.1';
 
   // Theme
   ThemeMode _themeMode = ThemeMode.system;

@@ -1,7 +1,7 @@
 class AppConstants {
   // App info
   static const String appName = 'Pick Up & Delivery';
-  static const String appVersion = '4.0.0';
+  static const String appVersion = '4.0.1';
   static const String packageName = 'com.doublersharpening.pickupdelivery';
 
   // API endpoints

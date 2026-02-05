@@ -134,7 +134,7 @@ class PickupProvider with ChangeNotifier {
     }).toList();
 
     try {
-      final response = await ApiService().uploadPOs(payload.cast<Map<String, dynamic>>(), uploadUrl);
+      await ApiService().uploadPOs(payload.cast<Map<String, dynamic>>(), uploadUrl);
 
       // If upload succeeded (HTTP 200), mark uploaded true locally
       // The server returns HTTP 200 on success per contract
@@ -149,7 +149,8 @@ class PickupProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       print('Failed to upload POs: $e');
-      // Keep local state; caller can surface error to user
+      // Keep local state; rethrow so UI can display the error to the user
+      rethrow;
     }
   }
 

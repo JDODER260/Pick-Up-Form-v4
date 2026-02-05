@@ -29,7 +29,7 @@ class CompanySelectionScreen extends StatelessWidget {
     allCompaniesSet.addAll(dbCompanies);
     allCompaniesSet.addAll(deliveryCompanies);
 
-    final companies = allCompaniesSet.toList()..sort();
+    final companies = allCompaniesSet.toList();
 
     return Scaffold(
       appBar: AppBar(title: Text('Select Company')),
@@ -62,6 +62,7 @@ class CompanySelectionScreen extends StatelessWidget {
                             onTap: () {
                               // Set selected company in global AppProvider
                               appProvider.selectedCompany = company;
+                              companyProvider.setSelectedCompany(company);
 
                               // If delivery mode and company in delivery list, set current delivery index
                               if (appProvider.appMode == 'delivery' && hasDelivery) {

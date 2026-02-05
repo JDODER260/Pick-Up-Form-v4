@@ -32,7 +32,20 @@ class ApiService {
         if (response.body.trim().isEmpty) return {};
         return jsonDecode(response.body);
       } else {
-        throw Exception('Failed to upload: ${response.statusCode}');
+        String body = response.body;
+        // Try to include server-provided message if available
+        String serverMessage;
+        try {
+          final parsed = jsonDecode(body);
+          if (parsed is Map && parsed.containsKey('error')) {
+            serverMessage = parsed['error'].toString();
+          } else {
+            serverMessage = body;
+          }
+        } catch (_) {
+          serverMessage = body;
+        }
+        throw Exception('Failed to upload: ${response.statusCode} ${serverMessage.isNotEmpty ? '- $serverMessage' : ''}');
       }
     } catch (e) {
       throw Exception('Upload failed: $e');
@@ -113,9 +126,7 @@ class ApiService {
       final response = await http.get(Uri.parse(updateCheckUrl));
 
       if (response.statusCode == 200) {
-        // Parse HTML to find APK files
-        final html = response.body;
-        // You'll need to implement parsing logic similar to Python regex
+        // TODO: implement parsing logic to extract latest APK/version from response.body
         return ''; // Return latest version or empty string
       }
       return '';

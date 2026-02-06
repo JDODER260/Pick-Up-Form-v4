@@ -1,7 +1,7 @@
 name: pickup_delivery_app
 description: Pick Up & Delivery Management System
 publish_to: 'none'
-version: 4.0.1+2
+version: 4.0.2+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

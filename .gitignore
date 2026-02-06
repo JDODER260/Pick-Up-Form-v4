@@ -49,6 +49,8 @@ captures/
 *.jks
 *.keystore
 
+/android/app/*.jks
+
 # External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild
 .cxx/
@@ -67,3 +69,4 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
+/pick_up_app_v4/key.properties

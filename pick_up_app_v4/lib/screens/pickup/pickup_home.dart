@@ -26,7 +26,8 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
 
   Future<void> _initializeData() async {
     final pickupProvider = Provider.of<PickupProvider>(context, listen: false);
-    final companyProvider = Provider.of<CompanyProvider>(context, listen: false);
+    final companyProvider =
+        Provider.of<CompanyProvider>(context, listen: false);
     final appProvider = Provider.of<AppProvider>(context, listen: false);
 
     // Load company database
@@ -83,13 +84,14 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                                     .textTheme
                                     .headlineSmall
                                     ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
                               ),
                               const SizedBox(height: 3),
                               Selector<AppProvider, String>(
-                                selector: (_, provider) => provider.selectedRoute,
+                                selector: (_, provider) =>
+                                    provider.selectedRoute,
                                 builder: (_, route, __) {
                                   return Text(
                                     route.isNotEmpty
@@ -104,7 +106,8 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                               ),
                               const SizedBox(height: 3),
                               Selector<AppProvider, String>(
-                                selector: (_, provider) => provider.selectedCompany,
+                                selector: (_, provider) =>
+                                    provider.selectedCompany,
                                 builder: (_, company, __) {
                                   return Text(
                                     company.isNotEmpty
@@ -131,36 +134,42 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                                       minimumSize: const Size(0, 22),
                                     ),
                                     onPressed: () async {
-                                      final routes = companyProvider.availableRoutes;
+                                      final routes =
+                                          companyProvider.availableRoutes;
 
                                       if (routes.isEmpty) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
                                           const SnackBar(
-                                            content: Text("No routes available"),
+                                            content:
+                                                Text("No routes available"),
                                           ),
                                         );
                                         return;
                                       }
 
-                                      final selected = await showDialog<String?>(
+                                      final selected =
+                                          await showDialog<String?>(
                                         context: context,
                                         builder: (context) => SimpleDialog(
                                           title: const Text("Select Route"),
                                           children: routes
                                               .map(
                                                 (r) => SimpleDialogOption(
-                                              child: Text(r),
-                                              onPressed: () {
-                                                Navigator.pop(context, r);
-                                              },
-                                            ),
-                                          )
+                                                  child: Text(r),
+                                                  onPressed: () {
+                                                    Navigator.pop(context, r);
+                                                  },
+                                                ),
+                                              )
                                               .toList(),
                                         ),
                                       );
 
-                                      if (selected != null && selected.isNotEmpty) {
-                                        companyProvider.setSelectedRoute(selected);
+                                      if (selected != null &&
+                                          selected.isNotEmpty) {
+                                        companyProvider
+                                            .setSelectedRoute(selected);
                                         appProvider.selectedRoute = selected;
                                         appProvider.selectedCompany = "";
                                       }
@@ -177,9 +186,11 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                                     ),
                                     onPressed: () {
                                       if (appProvider.selectedRoute.isEmpty) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
                                           const SnackBar(
-                                            content: Text("Please select a route first"),
+                                            content: Text(
+                                                "Please select a route first"),
                                           ),
                                         );
                                         return;
@@ -188,11 +199,13 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (_) => CompanySelectionScreen(),
+                                          builder: (_) =>
+                                              CompanySelectionScreen(),
                                         ),
                                       ).then((_) {
                                         // Update app provider when returning from selection
-                                        appProvider.selectedCompany = companyProvider.selectedCompany;
+                                        appProvider.selectedCompany =
+                                            companyProvider.selectedCompany;
                                       });
                                     },
                                     child: const Text("Select Company"),
@@ -218,7 +231,8 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                                   Expanded(
                                     child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(vertical: 10),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10),
                                         shape: const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.only(
                                             topLeft: Radius.circular(8),
@@ -227,19 +241,25 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                                         ),
                                       ),
                                       onPressed: () async {
-                                        if (companyProvider.selectedRoute.isEmpty) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                        if (companyProvider
+                                            .selectedRoute.isEmpty) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
                                             const SnackBar(
-                                              content: Text("Please select a route first"),
+                                              content: Text(
+                                                  "Please select a route first"),
                                             ),
                                           );
                                           return;
                                         }
 
-                                        await companyProvider.selectPreviousCompany();
-                                        appProvider.selectedCompany = companyProvider.selectedCompany;
+                                        await companyProvider
+                                            .selectPreviousCompany();
+                                        appProvider.selectedCompany =
+                                            companyProvider.selectedCompany;
                                       },
-                                      child: const Icon(Icons.arrow_back, size: 16),
+                                      child: const Icon(Icons.arrow_back,
+                                          size: 16),
                                     ),
                                   ),
 
@@ -247,7 +267,8 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                                   Expanded(
                                     child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(vertical: 10),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10),
                                         shape: const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.only(
                                             topRight: Radius.circular(8),
@@ -256,19 +277,25 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                                         ),
                                       ),
                                       onPressed: () async {
-                                        if (companyProvider.selectedRoute.isEmpty) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
+                                        if (companyProvider
+                                            .selectedRoute.isEmpty) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
                                             const SnackBar(
-                                              content: Text("Please select a route first"),
+                                              content: Text(
+                                                  "Please select a route first"),
                                             ),
                                           );
                                           return;
                                         }
 
-                                        await companyProvider.selectNextCompany();
-                                        appProvider.selectedCompany = companyProvider.selectedCompany;
+                                        await companyProvider
+                                            .selectNextCompany();
+                                        appProvider.selectedCompany =
+                                            companyProvider.selectedCompany;
                                       },
-                                      child: const Icon(Icons.arrow_forward, size: 16),
+                                      child: const Icon(Icons.arrow_forward,
+                                          size: 16),
                                     ),
                                   ),
                                 ],
@@ -279,7 +306,8 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                               Column(
                                 children: [
                                   Selector<CompanyProvider, String>(
-                                    selector: (_, provider) => provider.getSelectedCompanyLabel(),
+                                    selector: (_, provider) =>
+                                        provider.getSelectedCompanyLabel(),
                                     builder: (_, label, __) {
                                       return Text(
                                         label,
@@ -292,7 +320,8 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                                   ),
                                   const SizedBox(height: 2),
                                   Selector<CompanyProvider, String>(
-                                    selector: (_, provider) => provider.lastSyncText,
+                                    selector: (_, provider) =>
+                                        provider.lastSyncText,
                                     builder: (_, syncText, __) {
                                       return Text(
                                         syncText,
@@ -317,23 +346,19 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
               const SizedBox(height: 8),
 
               // ACTION BUTTONS
-              SizedBox(
-                height: 70,
-                child: GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  childAspectRatio: 1.2,
-                  children: [
-                    _buildActionCard(
-                      context: context,
+            SizedBox(
+              height: 110, // ← SET HEIGHT ONLY (adjust this)
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: _buildResponsiveActionCard(
                       icon: Icons.add,
                       title: "Add New PO",
                       color: Colors.blue,
                       onTap: () {
-                        if (appProvider.selectedRoute.isEmpty || appProvider.selectedCompany.isEmpty) {
+                        if (appProvider.selectedRoute.isEmpty ||
+                            appProvider.selectedCompany.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text("Please select route and company first"),
@@ -342,20 +367,18 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                           return;
                         }
 
-                        Provider.of<PickupProvider>(
-                          context,
-                          listen: false,
-                        ).setEditingIndex(null);
+                        Provider.of<PickupProvider>(context, listen: false)
+                            .setEditingIndex(null);
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => AddPOScreen(),
-                          ),
+                          MaterialPageRoute(builder: (_) => AddPOScreen()),
                         );
                       },
                     ),
-                    _buildActionCard(
-                      context: context,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildResponsiveActionCard(
                       icon: Icons.cloud_upload,
                       title: "Upload Selected",
                       color: Colors.green,
@@ -370,10 +393,7 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                         }
 
                         try {
-                          await pickupProvider.uploadSelected(
-                            appProvider.uploadUrl,
-                          );
-
+                          await pickupProvider.uploadSelected(appProvider.uploadUrl);
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text("Selected POs uploaded successfully"),
@@ -381,8 +401,9 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                             ),
                           );
                         } catch (e) {
-                          final raw = e.toString();
-                          final msg = raw.replaceFirst(RegExp(r'^Exception:\s*'), '');
+                          final msg = e
+                              .toString()
+                              .replaceFirst(RegExp(r'^Exception:\s*'), '');
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text("Upload failed: $msg"),
@@ -392,17 +413,17 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                         }
                       },
                     ),
-                    _buildActionCard(
-                      context: context,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildResponsiveActionCard(
                       icon: Icons.delete,
                       title: "Delete Selected",
                       color: Colors.red,
                       onTap: () async {
                         if (pickupProvider.selectedCount == 0) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("No items selected"),
-                            ),
+                            const SnackBar(content: Text("No items selected")),
                           );
                           return;
                         }
@@ -411,7 +432,9 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                           context: context,
                           builder: (context) => AlertDialog(
                             title: const Text("Confirm Delete"),
-                            content: Text("Delete ${pickupProvider.selectedCount} selected POs?"),
+                            content: Text(
+                              "Delete ${pickupProvider.selectedCount} selected POs?",
+                            ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context, false),
@@ -432,29 +455,36 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                           await pickupProvider.deleteSelected();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text("Deleted ${pickupProvider.selectedCount} POs"),
+                              content: Text(
+                                "Deleted ${pickupProvider.selectedCount} POs",
+                              ),
                             ),
                           );
                         }
                       },
                     ),
-                    _buildActionCard(
-                      context: context,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildResponsiveActionCard(
                       icon: Icons.select_all,
                       title: "Select All",
                       color: Colors.orange,
                       onTap: pickupProvider.selectAll,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
 
-              const SizedBox(height: 8),
+
+            const SizedBox(height: 8),
 
               // HEADER with stats
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -525,188 +555,201 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
               Flexible(
                 child: pickupProvider.pos.isEmpty
                     ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.inventory_2_outlined,
-                        size: 64,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        "No pickup orders yet",
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyLarge
-                            ?.copyWith(color: Colors.grey),
-                      ),
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          if (appProvider.selectedRoute.isEmpty || appProvider.selectedCompany.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Please select route and company first"),
-                              ),
-                            );
-                            return;
-                          }
-
-                          Provider.of<PickupProvider>(
-                            context,
-                            listen: false,
-                          ).setEditingIndex(null);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => AddPOScreen(),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.inventory_2_outlined,
+                              size: 64,
+                              color: Colors.grey,
                             ),
-                          );
-                        },
-                        child: const Text("Create First PO"),
-                      ),
-                    ],
-                  ),
-                )
-                    : RefreshIndicator(
-                  onRefresh: () async {
-                    await pickupProvider.loadPOs();
-                  },
-                  child: ListView.builder(
-                    itemCount: pickupProvider.pos.length,
-                    itemBuilder: (context, index) {
-                      final po = pickupProvider.pos[index];
-                      final selected =
-                      pickupProvider.selectedIndices.contains(index);
-
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        color: selected
-                            ? Colors.blue.withOpacity(0.1)
-                            : null,
-                        child: ListTile(
-                          leading: Checkbox(
-                            value: selected,
-                            onChanged: (_) =>
-                                pickupProvider.toggleSelection(index),
-                          ),
-                          title: Text(
-                            po.description,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              decoration: po.uploaded
-                                  ? TextDecoration.lineThrough
-                                  : null,
+                            const SizedBox(height: 16),
+                            Text(
+                              "No pickup orders yet",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(color: Colors.grey),
                             ),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                "${po.company} • ${po.route} • Qty: ${po.quantity}",
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: po.uploaded
-                                          ? Colors.green.withOpacity(0.2)
-                                          : Colors.orange.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      po.uploaded ? "UPLOADED" : "PENDING",
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                        color: po.uploaded
-                                            ? Colors.green
-                                            : Colors.orange,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    po.createdAt.toLocal().toString().substring(0, 16),
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                tooltip: "Edit PO",
-                                onPressed: () {
-                                  pickupProvider.setEditingIndex(index);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => AddPOScreen(),
+                            const SizedBox(height: 8),
+                            ElevatedButton(
+                              onPressed: () {
+                                if (appProvider.selectedRoute.isEmpty ||
+                                    appProvider.selectedCompany.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          "Please select route and company first"),
                                     ),
                                   );
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete),
-                                tooltip: "Delete PO",
-                                onPressed: () async {
-                                  final confirmed = await showDialog<bool>(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text("Delete PO?"),
-                                      content: const Text("Are you sure you want to delete this pickup order?"),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(context, false),
-                                          child: const Text("Cancel"),
-                                        ),
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(context, true),
-                                          style: TextButton.styleFrom(
-                                            foregroundColor: Colors.red,
+                                  return;
+                                }
+
+                                Provider.of<PickupProvider>(
+                                  context,
+                                  listen: false,
+                                ).setEditingIndex(null);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => AddPOScreen(),
+                                  ),
+                                );
+                              },
+                              child: const Text("Create First PO"),
+                            ),
+                          ],
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: () async {
+                          await pickupProvider.loadPOs();
+                        },
+                        child: ListView.builder(
+                          itemCount: pickupProvider.pos.length,
+                          itemBuilder: (context, index) {
+                            final po = pickupProvider.pos[index];
+                            final selected =
+                                pickupProvider.selectedIndices.contains(index);
+
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              color: selected
+                                  ? Colors.blue.withOpacity(0.1)
+                                  : null,
+                              child: ListTile(
+                                leading: Checkbox(
+                                  value: selected,
+                                  onChanged: (_) =>
+                                      pickupProvider.toggleSelection(index),
+                                ),
+                                title: Text(
+                                  po.description,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    decoration: po.uploaded
+                                        ? TextDecoration.lineThrough
+                                        : null,
+                                  ),
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      "${po.company} • ${po.route} • Qty: ${po.quantity}",
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 2,
                                           ),
-                                          child: const Text("Delete"),
+                                          decoration: BoxDecoration(
+                                            color: po.uploaded
+                                                ? Colors.green.withOpacity(0.2)
+                                                : Colors.orange
+                                                    .withOpacity(0.2),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            po.uploaded
+                                                ? "UPLOADED"
+                                                : "PENDING",
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: po.uploaded
+                                                  ? Colors.green
+                                                  : Colors.orange,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          po.createdAt
+                                              .toLocal()
+                                              .toString()
+                                              .substring(0, 16),
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.grey,
+                                          ),
                                         ),
                                       ],
                                     ),
-                                  );
+                                  ],
+                                ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit),
+                                      tooltip: "Edit PO",
+                                      onPressed: () {
+                                        pickupProvider.setEditingIndex(index);
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => AddPOScreen(),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete),
+                                      tooltip: "Delete PO",
+                                      onPressed: () async {
+                                        final confirmed =
+                                            await showDialog<bool>(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            title: const Text("Delete PO?"),
+                                            content: const Text(
+                                                "Are you sure you want to delete this pickup order?"),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(
+                                                    context, false),
+                                                child: const Text("Cancel"),
+                                              ),
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(
+                                                    context, true),
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: Colors.red,
+                                                ),
+                                                child: const Text("Delete"),
+                                              ),
+                                            ],
+                                          ),
+                                        );
 
-                                  if (confirmed == true) {
-                                    await pickupProvider.deletePO(index);
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(
-                                      const SnackBar(
-                                        content: Text("PO deleted"),
-                                      ),
-                                    );
-                                  }
-                                },
+                                        if (confirmed == true) {
+                                          await pickupProvider.deletePO(index);
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text("PO deleted"),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
-                ),
+                      ),
               ),
             ],
           ),
@@ -745,13 +788,58 @@ class _PickupHomeScreenState extends State<PickupHomeScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontSize: 12,
-                    color: color,
-                    fontWeight: FontWeight.w500,
-                  ),
+                        fontSize: 12,
+                        color: color,
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResponsiveActionCard({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              double iconSize = constraints.maxHeight * 0.4;
+              double fontSize = constraints.maxHeight * 0.15;
+
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: iconSize, color: color),
+                  const SizedBox(height: 4),
+                  Flexible(
+                    child: Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontSize: fontSize,
+                            color: color,
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),

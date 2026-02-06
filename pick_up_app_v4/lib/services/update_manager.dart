@@ -95,31 +95,40 @@ class UpdateManager {
     bool downloadComplete = false;
     String? downloadedFilePath;
 
-    // Create a completer for the download
+    // Create a completer for the download and a progress stream
     final completer = Completer<String?>();
+    final progressController = StreamController<double>();
 
-    // Start download in background
-    unawaited(DownloadUtils.downloadFile(
+    // Start download in background; forward progress into the controller
+    DownloadUtils.downloadFile(
       downloadUrl,
       fileName: fileName,
       onProgress: (progress) {
-        print('Download progress: ${(progress * 100).toStringAsFixed(1)}%');
+        try {
+          if (!progressController.isClosed) progressController.add(progress);
+        } catch (_) {}
       },
     ).then((filePath) {
       downloadedFilePath = filePath;
       downloadComplete = true;
-      completer.complete(filePath);
+      if (!completer.isCompleted) completer.complete(filePath);
     }).catchError((e) {
-      completer.completeError(e);
-    }));
+      if (!completer.isCompleted) completer.completeError(e);
+    }).whenComplete(() {
+      // close the progress stream when done
+      try {
+        if (!progressController.isClosed) progressController.close();
+      } catch (_) {}
+    });
 
-    // Show the progress dialog
+    // Show the progress dialog (pass the stream)
     final success = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (context) => DownloadProgressDialog(
         downloadFuture: completer.future,
         fileName: fileName,
+        progressStream: progressController.stream,
       ),
     );
 

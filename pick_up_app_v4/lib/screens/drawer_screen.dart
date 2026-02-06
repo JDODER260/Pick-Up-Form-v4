@@ -102,19 +102,18 @@ class DrawerScreen extends StatelessWidget {
                   context: context,
                   icon: Icons.route,
                   title: 'Route Order',
-                  enabled: appProvider.selectedRoute.isNotEmpty,
+                  enabled: true, // always true
                   onTap: () {
                     Navigator.pop(context);
-                    if (appProvider.selectedRoute.isNotEmpty) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RouteOrderScreen(),
-                        ),
-                      );
-                    }
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RouteOrderScreen(),
+                      ),
+                    );
                   },
                 ),
+
 
                 _buildDrawerItem(
                   context: context,
@@ -168,13 +167,13 @@ class DrawerScreen extends StatelessWidget {
       leading: Icon(icon,
           color: enabled
               ? Theme.of(context).iconTheme.color
-              : Theme.of(context).disabledColor),
+              : Theme.of(context).iconTheme.color),
       title: Text(
         title,
         style: TextStyle(
           color: enabled
               ? Theme.of(context).textTheme.bodyLarge?.color
-              : Theme.of(context).disabledColor,
+              : Theme.of(context).iconTheme.color,
         ),
       ),
       enabled: enabled,

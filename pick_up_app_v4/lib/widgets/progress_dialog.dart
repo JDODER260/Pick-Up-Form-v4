@@ -1,13 +1,16 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 class DownloadProgressDialog extends StatefulWidget {
   final Future<String?> downloadFuture;
   final String fileName;
+  final Stream<double> progressStream;
 
   const DownloadProgressDialog({
     Key? key,
     required this.downloadFuture,
     required this.fileName,
+    required this.progressStream,
   }) : super(key: key);
 
   @override
@@ -19,30 +22,33 @@ class _DownloadProgressDialogState extends State<DownloadProgressDialog> {
   bool _isDownloading = true;
   bool _isComplete = false;
   String? _error;
+  StreamSubscription<double>? _sub;
 
   @override
   void initState() {
     super.initState();
+    _sub = widget.progressStream.listen((p) {
+      if (mounted) setState(() => _progress = p.clamp(0.0, 1.0));
+    }, onError: (e) {
+      if (mounted) setState(() => _error = e.toString());
+    });
+
     _startDownload();
   }
 
   void _startDownload() async {
     try {
-      // Wait for the download to complete
       await widget.downloadFuture;
 
       if (mounted) {
         setState(() {
           _isDownloading = false;
           _isComplete = true;
+          _progress = 1.0;
         });
 
-        // Wait a moment to show completion
-        await Future.delayed(Duration(milliseconds: 500));
-
-        if (mounted) {
-          Navigator.of(context).pop(true); // Return success
-        }
+        await Future.delayed(const Duration(milliseconds: 500));
+        if (mounted) Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
@@ -51,15 +57,15 @@ class _DownloadProgressDialogState extends State<DownloadProgressDialog> {
           _error = e.toString();
         });
       }
+    } finally {
+      await _sub?.cancel();
     }
   }
 
-  void _updateProgress(double progress) {
-    if (mounted) {
-      setState(() {
-        _progress = progress;
-      });
-    }
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
   }
 
   @override
@@ -73,114 +79,73 @@ class _DownloadProgressDialogState extends State<DownloadProgressDialog> {
             LinearProgressIndicator(
               value: _progress,
               backgroundColor: Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
               minHeight: 10,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Progress:',
-                  style: TextStyle(fontSize: 14),
-                ),
-                Text(
-                  '${(_progress * 100).toStringAsFixed(1)}%',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                  ),
-                ),
+                const Text('Progress:', style: TextStyle(fontSize: 14)),
+                Text('${(_progress * 100).toStringAsFixed(1)}%',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue)),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'File:',
-                  style: TextStyle(fontSize: 14),
-                ),
-                Text(
-                  widget.fileName,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
+                const Text('File:', style: TextStyle(fontSize: 14)),
+                Expanded(
+                  child: Text(
+                    widget.fileName,
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    textAlign: TextAlign.right,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
                 ),
               ],
             ),
           ],
           if (_error != null) ...[
-            SizedBox(height: 16),
-            Icon(
-              Icons.error,
-              color: Colors.red,
-              size: 40,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Download Failed',
-              style: TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              _error!,
-              style: TextStyle(fontSize: 12),
-              textAlign: TextAlign.center,
-            ),
+            const SizedBox(height: 16),
+            const Icon(Icons.error, color: Colors.red, size: 40),
+            const SizedBox(height: 16),
+            const Text('Download Failed', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text(_error!, style: const TextStyle(fontSize: 12), textAlign: TextAlign.center),
           ],
           if (_isComplete) ...[
-            SizedBox(height: 16),
-            Icon(
-              Icons.check_circle,
-              color: Colors.green,
-              size: 40,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Download complete!',
-              style: TextStyle(
-                color: Colors.green,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Ready to install',
-              style: TextStyle(fontSize: 14),
-            ),
+            const SizedBox(height: 16),
+            const Icon(Icons.check_circle, color: Colors.green, size: 40),
+            const SizedBox(height: 16),
+            const Text('Download complete!', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text('Ready to install', style: TextStyle(fontSize: 14)),
           ],
         ],
       ),
       actions: _isDownloading
           ? [
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop(false); // Return cancelled
-          },
-          child: Text('Cancel'),
-        ),
-      ]
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+            ]
           : _error != null
-          ? [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text('Close'),
-        ),
-      ]
-          : [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text('Close'),
-        ),
-      ],
+              ? [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Close'),
+                  ),
+                ]
+              : [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Close'),
+                  ),
+                ],
     );
   }
 }

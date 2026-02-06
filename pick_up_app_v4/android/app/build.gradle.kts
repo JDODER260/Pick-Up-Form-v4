@@ -1,5 +1,5 @@
 import java.util.Base64
-import java.io.FileInputStream
+import java.io.File
 
 plugins {
     id("com.android.application")
@@ -31,39 +31,34 @@ android {
 
     signingConfigs {
         create("release") {
-            // Get values from environment variables (which will be set from GitHub Secrets)
             val envKeyAlias = System.getenv("KEY_ALIAS") ?: ""
             val envKeyPassword = System.getenv("KEY_PASSWORD") ?: ""
             val envStorePassword = System.getenv("STORE_PASSWORD") ?: ""
+            val keystoreBase64 = System.getenv("KEYSTORE_BASE64") ?: ""
 
             keyAlias = envKeyAlias
             keyPassword = envKeyPassword
             storePassword = envStorePassword
 
-            // For storeFile, you need to create the keystore file from a base64 encoded string
-            val keystoreBase64 = System.getenv("KEYSTORE_BASE64")
-            if (keystoreBase64 != null && keystoreBase64.isNotEmpty()) {
-                // Create keystore file in a temporary location
-                val keystoreFile = File("${project.layout.buildDirectory.get()}/tmp/keystore.jks")
-                keystoreFile.parentFile.mkdirs()
-
-                // Decode base64 and write to file
-                val keystoreBytes = Base64.getDecoder().decode(keystoreBase64)
-                keystoreFile.writeBytes(keystoreBytes)
-
+            if (keystoreBase64.isNotEmpty()) {
+                // Put keystore inside 'app' folder to avoid Gradle path issues
+                val keystoreFile = File("${project.projectDir}/app/pickup_delivery_release.jks")
+                if (!keystoreFile.exists()) {
+                    keystoreFile.writeBytes(Base64.getDecoder().decode(keystoreBase64))
+                }
                 storeFile = keystoreFile
             }
 
-            // Validate that all required values are present
-            if (envKeyAlias.isEmpty() || envKeyPassword.isEmpty() || envStorePassword.isEmpty() || keystoreBase64.isNullOrEmpty()) {
-                logger.warn("Warning: Not all signing config values are available. Release signing may not work.")
+            if (envKeyAlias.isEmpty() || envKeyPassword.isEmpty() || envStorePassword.isEmpty() || keystoreBase64.isEmpty()) {
+                logger.warn("Warning: Missing signing environment variables. Release signing may fail.")
             }
         }
     }
 
+
     buildTypes {
         getByName("release") {
-            // Only apply signing config if all required values are available
+            // Apply signing config only if all env vars exist
             val keyAlias = System.getenv("KEY_ALIAS")
             val keyPassword = System.getenv("KEY_PASSWORD")
             val storePassword = System.getenv("STORE_PASSWORD")
@@ -75,7 +70,7 @@ android {
                 !keystoreBase64.isNullOrEmpty()) {
                 signingConfig = signingConfigs.getByName("release")
             } else {
-                logger.warn("Release build will not be signed due to missing secrets")
+                logger.warn("Release build will not be signed due to missing environment variables.")
             }
 
             isMinifyEnabled = true

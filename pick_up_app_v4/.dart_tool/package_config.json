@@ -135,9 +135,9 @@
     },
     {
       "name": "flutter_launcher_icons",
-      "rootUri": "file:///C:/Users/jdode/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_launcher_icons-0.13.1",
+      "rootUri": "file:///C:/Users/jdode/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_launcher_icons-0.14.4",
       "packageUri": "lib/",
-      "languageVersion": "2.18"
+      "languageVersion": "3.0"
     },
     {
       "name": "flutter_lints",
@@ -267,7 +267,7 @@
     },
     {
       "name": "objective_c",
-      "rootUri": "file:///C:/Users/jdode/AppData/Local/Pub/Cache/hosted/pub.dev/objective_c-9.2.5",
+      "rootUri": "file:///C:/Users/jdode/AppData/Local/Pub/Cache/hosted/pub.dev/objective_c-9.3.0",
       "packageUri": "lib/",
       "languageVersion": "3.10"
     },

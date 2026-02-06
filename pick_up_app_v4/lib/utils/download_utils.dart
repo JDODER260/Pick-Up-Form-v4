@@ -1,76 +1,49 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class DownloadUtils {
+  /// Downloads a file from [url] to [fileName] and reports progress via [onProgress].
+  /// Returns the full file path on success, or null on failure.
   static Future<String?> downloadFile(
       String url, {
         required String fileName,
         required Function(double) onProgress,
       }) async {
     try {
-      // Check and request permissions BEFORE downloading
+      // Request permissions on Android
       if (Platform.isAndroid) {
-        // First, check if we have storage permission
         var storageStatus = await Permission.storage.status;
-
         if (!storageStatus.isGranted) {
-          // Request storage permission
           storageStatus = await Permission.storage.request();
-
           if (!storageStatus.isGranted) {
-            // If still not granted, try requesting manage external storage (for Android 11+)
-            if (await Permission.manageExternalStorage.isRestricted) {
-              // Open app settings to let user grant permission manually
-              await openAppSettings();
-              return null;
-            }
-
-            // Try requesting manage external storage
             final manageStatus = await Permission.manageExternalStorage.request();
-            if (!manageStatus.isGranted) {
-              print('Storage permission denied by user');
-              return null;
-            }
+            if (!manageStatus.isGranted) return null;
           }
-        }
-
-        // Also request install packages permission for Android 8+
-        if (!await Permission.requestInstallPackages.isGranted) {
-          await Permission.requestInstallPackages.request();
         }
       }
 
-      print('Starting download from: $url');
+      print('Starting download: $url');
 
-      // Create HTTP client
       final client = http.Client();
-      final request = await client.get(Uri.parse(url));
+      final request = http.Request('GET', Uri.parse(url));
+      final streamedResponse = await client.send(request);
 
-      if (request.statusCode != 200) {
-        print('Failed to download: ${request.statusCode}');
+      if (streamedResponse.statusCode != 200) {
+        print('Failed to download: ${streamedResponse.statusCode}');
         client.close();
         return null;
       }
 
-      // Get downloads directory
+      final total = streamedResponse.contentLength ?? 0;
+
+      // Determine download directory
       Directory? directory;
-
       if (Platform.isAndroid) {
-        // Try multiple approaches to get downloads directory
-        try {
-          // First try getExternalStorageDirectory (deprecated but still works)
-          directory = await getExternalStorageDirectory();
-          print('Got external storage directory: ${directory?.path}');
-
-          if (directory == null) {
-            // Fallback to getApplicationDocumentsDirectory
-            directory = await getApplicationDocumentsDirectory();
-            print('Fell back to documents directory: ${directory.path}');
-          }
-        } catch (e) {
-          print('Error getting directories: $e');
+        directory = await getExternalStorageDirectory();
+        if (directory == null) {
           directory = await getApplicationDocumentsDirectory();
         }
       } else {
@@ -78,162 +51,104 @@ class DownloadUtils {
       }
 
       if (directory == null) {
-        print('Could not get any directory');
+        print('No download directory available.');
         client.close();
         return null;
       }
 
-      // Create the directory if it doesn't exist
       if (!await directory.exists()) {
         await directory.create(recursive: true);
-        print('Created directory: ${directory.path}');
       }
 
-      // Sanitize filename
+      // Sanitize file name
       final safeFileName = fileName
           .replaceAll(' ', '_')
-          .replaceAll(RegExp(r'[<>:"/\\|?*]'), '')  // Remove invalid characters
-          .replaceAll(RegExp(r'\s+'), '_');  // Replace multiple spaces
+          .replaceAll(RegExp(r'[<>:"/\\|?*]'), '')
+          .replaceAll(RegExp(r'\s+'), '_');
 
-      print('Safe file name: $safeFileName');
-
-      // Create file path - try different approaches
-      String filePath;
-
-      if (Platform.isAndroid) {
-        // Try to save directly to Downloads folder
-        final downloadsDir = Directory('/storage/emulated/0/Download');
-        if (await downloadsDir.exists()) {
-          filePath = '${downloadsDir.path}/$safeFileName';
-          print('Using direct downloads path: $filePath');
-        } else {
-          // Fallback to app's directory
-          filePath = '${directory.path}/$safeFileName';
-          print('Using app directory path: $filePath');
-        }
-      } else {
-        filePath = '${directory.path}/$safeFileName';
-      }
+      final filePath = Platform.isAndroid
+          ? '/storage/emulated/0/Download/$safeFileName'
+          : '${directory.path}/$safeFileName';
 
       final file = File(filePath);
-
-      // Write the file with progress tracking
-      print('Writing file to: $filePath');
-
-      // Get the bytes
-      final bytes = request.bodyBytes;
-      final total = bytes.length;
-
-      // Write in chunks to track progress
-      const chunkSize = 1024 * 1024; // 1MB chunks
       final sink = file.openWrite();
-      int written = 0;
 
-      for (var i = 0; i < bytes.length; i += chunkSize) {
-        final end = (i + chunkSize) < bytes.length ? i + chunkSize : bytes.length;
-        final chunk = bytes.sublist(i, end);
-        sink.add(chunk); // Removed await - this returns void
-        await sink.flush(); // Flush to ensure chunk is written
+      int downloaded = 0;
+      final stopwatch = Stopwatch()..start();
 
-        written += chunk.length;
+      // Listen to the stream in chunks
+      final subscription = streamedResponse.stream.listen(
+            (chunk) async {
+          sink.add(chunk);
+          downloaded += chunk.length;
 
-        // Update progress
-        final double progress = total > 0 ? written / total : 0.0; // Cast to double
-        onProgress(progress);
-        print('Progress: ${(progress * 100).toStringAsFixed(1)}%');
-      }
+          // Update progress every 0.1 seconds
+          if (stopwatch.elapsedMilliseconds >= 100 || downloaded == total) {
+            final progress = total > 0 ? downloaded / total : 0.0;
+            try {
+              onProgress(progress);
+            } catch (_) {}
+            stopwatch.reset();
+          }
+        },
+        onDone: () async {
+          await sink.close();
+          client.close();
+          try {
+            onProgress(1.0); // Ensure 100% progress
+          } catch (_) {}
+          print('Download complete: $filePath');
+        },
+        onError: (e) async {
+          await sink.close();
+          client.close();
+          print('Download error: $e');
+        },
+        cancelOnError: true,
+      );
 
-      await sink.close();
-      client.close();
-
-      print('File downloaded successfully!');
-      print('File path: $filePath');
-      print('File size: ${await file.length()} bytes');
-
-      // Verify file exists
-      if (await file.exists()) {
-        print('File verified to exist');
-        return filePath;
-      } else {
-        print('File does not exist after writing!');
-        return null;
-      }
+      await subscription.asFuture(); // Wait until fully done
+      return filePath;
     } catch (e) {
-      print('Error downloading file: $e');
-      print('Stack trace: ${e.toString()}');
+      print('Download failed: $e');
       return null;
     }
   }
 
+  /// Check if a file is downloaded
   static Future<bool> isFileDownloaded(String fileName) async {
     try {
-      // Try multiple locations
-      final List<String> possiblePaths = [];
-
-      if (Platform.isAndroid) {
-        // Direct Downloads folder
-        possiblePaths.add('/storage/emulated/0/Download/$fileName');
-
-        // Sanitized version
-        final safeFileName = fileName.replaceAll(' ', '_');
-        possiblePaths.add('/storage/emulated/0/Download/$safeFileName');
-
-        // App directories
-        final extDir = await getExternalStorageDirectory();
-        if (extDir != null) {
-          possiblePaths.add('${extDir.path}/$fileName');
-          possiblePaths.add('${extDir.path}/$safeFileName');
-        }
-
-        final appDir = await getApplicationDocumentsDirectory();
-        possiblePaths.add('${appDir.path}/$fileName');
-        possiblePaths.add('${appDir.path}/$safeFileName');
-      }
-
-      for (final path in possiblePaths) {
-        final file = File(path);
-        if (await file.exists()) {
-          print('Found file at: $path');
-          return true;
-        }
-      }
-
-      return false;
-    } catch (e) {
-      print('Error checking file: $e');
+      final dir = await getDownloadsDirectory();
+      if (dir == null) return false;
+      final file = File('${dir.path}/$fileName');
+      return await file.exists();
+    } catch (_) {
       return false;
     }
   }
 
+  /// Delete a downloaded file
   static Future<void> deleteDownloadedFile(String fileName) async {
     try {
-      final directory = await getDownloadsDirectory();
-      if (directory == null) return;
-
-      final safeFileName = fileName.replaceAll(' ', '_');
-      final filePath = '${directory.path}/$safeFileName';
-      final file = File(filePath);
-      if (await file.exists()) {
-        await file.delete();
-        print('File deleted: $filePath');
-      }
-    } catch (e) {
-      print('Error deleting file: $e');
-    }
+      final dir = await getDownloadsDirectory();
+      if (dir == null) return;
+      final file = File('${dir.path}/$fileName');
+      if (await file.exists()) await file.delete();
+    } catch (_) {}
   }
 
+  /// List all downloaded APK files
   static Future<List<String>> listDownloadedFiles() async {
     try {
-      final directory = await getDownloadsDirectory();
-      if (directory == null) return [];
-
-      final dir = Directory(directory.path);
+      final dir = await getDownloadsDirectory();
+      if (dir == null) return [];
       final files = await dir.list().toList();
       return files
-          .where((file) => file is File && file.path.endsWith('.apk'))
-          .map((file) => file.path.split('/').last)
+          .whereType<File>()
+          .where((f) => f.path.endsWith('.apk'))
+          .map((f) => f.path.split('/').last)
           .toList();
-    } catch (e) {
+    } catch (_) {
       return [];
     }
   }

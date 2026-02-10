@@ -16,6 +16,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _companyDbUrlController = TextEditingController();
   final _deliveryUrlController = TextEditingController();
   final _routeOrderUrlController = TextEditingController();
+  final _registerFcmUrlController = TextEditingController();
 
   @override
   void initState() {
@@ -30,6 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _companyDbUrlController.text = appProvider.companyDbUrl;
     _deliveryUrlController.text = appProvider.deliveryUrl;
     _routeOrderUrlController.text = appProvider.routeOrderUrl;
+    _registerFcmUrlController.text = appProvider.registerFcmUrl;
   }
 
   @override
@@ -38,6 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _companyDbUrlController.dispose();
     _deliveryUrlController.dispose();
     _routeOrderUrlController.dispose();
+    _registerFcmUrlController.dispose();
     super.dispose();
   }
 
@@ -49,6 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       companyDbUrl: _companyDbUrlController.text.trim(),
       deliveryUrl: _deliveryUrlController.text.trim(),
       routeOrderUrl: _routeOrderUrlController.text.trim(),
+      registerFcmUrl: _registerFcmUrlController.text.trim(),
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -70,7 +74,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _showSyncDialogAndRun() async {
     final appProvider = Provider.of<AppProvider>(context, listen: false);
-    final companyProvider = Provider.of<CompanyProvider>(context, listen: false);
+    final companyProvider =
+        Provider.of<CompanyProvider>(context, listen: false);
 
     if (appProvider.companyDbUrl.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -83,7 +88,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Sync Company Database'),
-        content: Text('Choose how to sync with the server:\n\nMerge: keep existing entries and add new ones.\nReplace: overwrite local database with server database.'),
+        content: Text(
+            'Choose how to sync with the server:\n\nMerge: keep existing entries and add new ones.\nReplace: overwrite local database with server database.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop('merge'),
@@ -108,8 +114,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) =>
-        // ignore: deprecated_member_use
-        WillPopScope(
+          // ignore: deprecated_member_use
+          WillPopScope(
         onWillPop: () async => false,
         child: Dialog(
           child: Padding(
@@ -139,11 +145,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await appProvider.loadCompanyDatabase();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Company database synced successfully'), backgroundColor: Colors.green),
+        SnackBar(
+            content: Text('Company database synced successfully'),
+            backgroundColor: Colors.green),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to sync company database'), backgroundColor: Colors.red),
+        SnackBar(
+            content: Text('Failed to sync company database'),
+            backgroundColor: Colors.red),
       );
     }
   }
@@ -303,7 +313,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => CompanySelectionScreen()),
+                          MaterialPageRoute(
+                              builder: (context) => CompanySelectionScreen()),
                         );
                       },
                       icon: Icon(Icons.business_center),
@@ -313,7 +324,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     SizedBox(height: 8),
-                    Text('Last Synced: ' + Provider.of<CompanyProvider>(context).lastSyncText),
+                    Text('Last Synced: ' +
+                        Provider.of<CompanyProvider>(context).lastSyncText),
                     SizedBox(height: 8),
                   ],
                 ),
@@ -339,7 +351,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     SizedBox(height: 12),
                     _buildInfoRow('Driver ID:', appProvider.driverId),
                     _buildInfoRow('Current Route:', appProvider.selectedRoute),
-                    _buildInfoRow('Current Company:', appProvider.selectedCompany),
+                    _buildInfoRow(
+                        'Current Company:', appProvider.selectedCompany),
                     _buildInfoRow('App Version:', appProvider.currentVersion),
                   ],
                 ),
@@ -424,6 +437,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         border: OutlineInputBorder(),
                       ),
                     ),
+                    SizedBox(height: 12),
+                    TextFormField(
+                      controller: _registerFcmUrlController,
+                      decoration: InputDecoration(
+                        labelText: 'FCM Register URL',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
                     SizedBox(height: 16),
                     ElevatedButton.icon(
                       onPressed: _saveSettings,
@@ -455,7 +476,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             width: 120,
             child: Text(label, style: TextStyle(fontWeight: FontWeight.w500)),
           ),
-
           SizedBox(width: 8),
           Expanded(
             child: Text(value.isNotEmpty ? value : 'Not set'),
@@ -465,4 +485,3 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
-

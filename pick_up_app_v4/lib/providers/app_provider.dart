@@ -16,7 +16,7 @@ class AppProvider with ChangeNotifier {
   String _selectedRoute = '';
   String _selectedCompany = '';
   String _driverId = '';
-  String _currentVersion = '4.0.2';
+  String _currentVersion = '4.0.3';
 
   // Theme
   ThemeMode _themeMode = ThemeMode.system;
@@ -27,6 +27,7 @@ class AppProvider with ChangeNotifier {
   String _companyDbUrl = "https://doublersharpening.com/api/company_db/";
   String _deliveryUrl = "https://doublersharpening.com/api/delivery_pos/";
   String _routeOrderUrl = "https://doublersharpening.com/api/route_order/";
+  String _registerFcmUrl = "https://doublersharpening.com/api/register_fcm/";
 
   // Data
   Map<String, RouteCompanies> _companyDatabase = {};
@@ -56,6 +57,7 @@ class AppProvider with ChangeNotifier {
   String get companyDbUrl => _companyDbUrl;
   String get deliveryUrl => _deliveryUrl;
   String get routeOrderUrl => _routeOrderUrl;
+  String get registerFcmUrl => _registerFcmUrl;
   Map<String, RouteCompanies> get companyDatabase => _companyDatabase;
   List<String> get availableRoutes => _availableRoutes;
   List<String> get companyNames => _companyNames;
@@ -131,6 +133,7 @@ class AppProvider with ChangeNotifier {
     _companyDbUrl = prefs.getString("companyDbUrl") ?? _companyDbUrl;
     _deliveryUrl = prefs.getString("deliveryUrl") ?? _deliveryUrl;
     _routeOrderUrl = prefs.getString("routeOrderUrl") ?? _routeOrderUrl;
+    _registerFcmUrl = prefs.getString("registerFcmUrl") ?? _registerFcmUrl;
 
     // Then try to load JSON app settings file
     try {
@@ -144,6 +147,7 @@ class AppProvider with ChangeNotifier {
         _companyDbUrl = fileSettings['companyDbUrl'] ?? _companyDbUrl;
         _deliveryUrl = fileSettings['deliveryUrl'] ?? _deliveryUrl;
         _routeOrderUrl = fileSettings['routeOrderUrl'] ?? _routeOrderUrl;
+        _registerFcmUrl = fileSettings['registerFcmUrl'] ?? _registerFcmUrl;
         if (fileSettings['themeMode'] != null) {
           final idx = int.tryParse(fileSettings['themeMode'].toString()) ?? fileSettings['themeMode'];
           if (idx is int && idx >= 0 && idx < ThemeMode.values.length) {
@@ -188,6 +192,7 @@ class AppProvider with ChangeNotifier {
       await prefs.setString('companyDbUrl', _companyDbUrl);
       await prefs.setString('deliveryUrl', _deliveryUrl);
       await prefs.setString('routeOrderUrl', _routeOrderUrl);
+      await prefs.setString('registerFcmUrl', _registerFcmUrl);
 
       print('✓ Saved to SharedPreferences');
 
@@ -201,6 +206,7 @@ class AppProvider with ChangeNotifier {
         'companyDbUrl': _companyDbUrl,
         'deliveryUrl': _deliveryUrl,
         'routeOrderUrl': _routeOrderUrl,
+        'registerFcmUrl': _registerFcmUrl,
       };
 
       await StorageService().saveAppSettingsFile(settingsMap);
@@ -369,11 +375,13 @@ class AppProvider with ChangeNotifier {
     String? companyDbUrl,
     String? deliveryUrl,
     String? routeOrderUrl,
+    String? registerFcmUrl,
   }) {
     _uploadUrl = uploadUrl ?? _uploadUrl;
     _companyDbUrl = companyDbUrl ?? _companyDbUrl;
     _deliveryUrl = deliveryUrl ?? _deliveryUrl;
     _routeOrderUrl = routeOrderUrl ?? _routeOrderUrl;
+    _registerFcmUrl = registerFcmUrl ?? _registerFcmUrl;
     saveSettings();
     notifyListeners();
   }
@@ -428,4 +436,3 @@ class AppProvider with ChangeNotifier {
     }
   }
 }
-

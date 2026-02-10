@@ -25,143 +25,259 @@ class _RouteOrderScreenState extends State<RouteOrderScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Route Selection
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Route:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 8),
-                    DropdownButton<String>(
-                      value: appProvider.selectedRoute.isNotEmpty ? appProvider.selectedRoute : null,
-                      items: appProvider.availableRoutes.map((route) {
-                        return DropdownMenuItem(
-                          value: route,
-                          child: Text(route),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        appProvider.selectedRoute = value!;
-                      },
-                      hint: Text('Select Route'),
-                      isExpanded: true,
-                    ),
-                  ],
-                ),
-              ),
-            ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final bool isTablet = constraints.maxWidth >= 600;
 
-            SizedBox(height: 20),
-
-            // View Mode Toggle
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'View Mode:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+            return Column(
+              children: [
+                // Route Selection and View Mode for tablet layout
+                if (isTablet)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Route Selection Row
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Route:',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    SizedBox(height: 8),
+                                    DropdownButton<String>(
+                                      value: appProvider.selectedRoute.isNotEmpty
+                                          ? appProvider.selectedRoute
+                                          : null,
+                                      items: appProvider.availableRoutes
+                                          .map((route) {
+                                        return DropdownMenuItem(
+                                          value: route,
+                                          child: Text(route),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        appProvider.selectedRoute = value!;
+                                      },
+                                      hint: Text('Select Route'),
+                                      isExpanded: true,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(width: 16),
+                              Expanded(
+                                flex: 3,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'View Mode:',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              routeProvider.setViewMode('single');
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                              routeProvider.viewMode ==
+                                                  'single'
+                                                  ? Theme.of(context).primaryColor
+                                                  : Colors.grey,
+                                            ),
+                                            child: Text('Single View'),
+                                          ),
+                                        ),
+                                        SizedBox(width: 8),
+                                        Expanded(
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              routeProvider.setViewMode('overview');
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                              routeProvider.viewMode ==
+                                                  'overview'
+                                                  ? Theme.of(context)
+                                                  .primaryColor
+                                                  : Colors.grey,
+                                            ),
+                                            child: Text('Overview View'),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              routeProvider.setViewMode('single');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: routeProvider.viewMode == 'single'
-                                  ? Theme.of(context).primaryColor
-                                  : Colors.grey,
-                            ),
-                            child: Text('Single View'),
+                  )
+                else
+                // Mobile layout (original structure)
+                  Column(
+                    children: [
+                      // Route Selection
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Route:',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(height: 8),
+                              DropdownButton<String>(
+                                value: appProvider.selectedRoute.isNotEmpty
+                                    ? appProvider.selectedRoute
+                                    : null,
+                                items: appProvider.availableRoutes.map((route) {
+                                  return DropdownMenuItem(
+                                    value: route,
+                                    child: Text(route),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  appProvider.selectedRoute = value!;
+                                },
+                                hint: Text('Select Route'),
+                                isExpanded: true,
+                              ),
+                            ],
                           ),
                         ),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              routeProvider.setViewMode('overview');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: routeProvider.viewMode == 'overview'
-                                  ? Theme.of(context).primaryColor
-                                  : Colors.grey,
-                            ),
-                            child: Text('Overview View'),
+                      ),
+                      SizedBox(height: 20),
+                      // View Mode Toggle
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'View Mode:',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        routeProvider.setViewMode('single');
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                        routeProvider.viewMode == 'single'
+                                            ? Theme.of(context).primaryColor
+                                            : Colors.grey,
+                                      ),
+                                      child: Text('Single View'),
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        routeProvider.setViewMode('overview');
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                        routeProvider.viewMode == 'overview'
+                                            ? Theme.of(context).primaryColor
+                                            : Colors.grey,
+                                      ),
+                                      child: Text('Overview View'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
+
+                SizedBox(height: 20),
+
+                // Load Route Button
+                ElevatedButton.icon(
+                  onPressed: () {
+                    _loadRouteOrder(context);
+                  },
+                  icon: Icon(Icons.download),
+                  label: Text('Load Route Order'),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size(double.infinity, 50),
+                  ),
                 ),
-              ),
-            ),
 
-            SizedBox(height: 20),
+                SizedBox(height: 20),
 
-            // Load Route Button
-            ElevatedButton.icon(
-              onPressed: () {
-                _loadRouteOrder(context);
-              },
-              icon: Icon(Icons.download),
-              label: Text('Load Route Order'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
-              ),
-            ),
+                // Display based on view mode
+                Expanded(
+                  child: routeProvider.viewMode == 'single'
+                      ? _buildSingleView(routeProvider)
+                      : _buildOverviewView(routeProvider),
+                ),
 
-            SizedBox(height: 20),
+                SizedBox(height: 20),
 
-            // Display based on view mode
-            Expanded(
-              child: routeProvider.viewMode == 'single'
-                  ? _buildSingleView(routeProvider)
-                  : _buildOverviewView(routeProvider),
-            ),
-
-            SizedBox(height: 20),
-
-            // Navigation for single view
-            if (routeProvider.viewMode == 'single' && routeProvider.stops.isNotEmpty)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    onPressed: routeProvider.hasPrevious ? routeProvider.previousStop : null,
-                    child: Row(
-                      children: [
-                        Icon(Icons.arrow_back),
-                        SizedBox(width: 4),
-                        Text('Previous'),
-                      ],
-                    ),
+                // Navigation for single view
+                if (routeProvider.viewMode == 'single' &&
+                    routeProvider.stops.isNotEmpty)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                        onPressed: routeProvider.hasPrevious
+                            ? routeProvider.previousStop
+                            : null,
+                        child: Row(
+                          children: [
+                            Icon(Icons.arrow_back),
+                            SizedBox(width: 4),
+                            Text('Previous'),
+                          ],
+                        ),
+                      ),
+                      Text(routeProvider.currentStopText),
+                      ElevatedButton(
+                        onPressed:
+                        routeProvider.hasNext ? routeProvider.nextStop : null,
+                        child: Row(
+                          children: [
+                            Text('Next'),
+                            SizedBox(width: 4),
+                            Icon(Icons.arrow_forward),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(routeProvider.currentStopText),
-                  ElevatedButton(
-                    onPressed: routeProvider.hasNext ? routeProvider.nextStop : null,
-                    child: Row(
-                      children: [
-                        Text('Next'),
-                        SizedBox(width: 4),
-                        Icon(Icons.arrow_forward),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -218,7 +334,8 @@ class _RouteOrderScreenState extends State<RouteOrderScreen> {
                   onPressed: () {
                     // Copy to clipboard
                     Clipboard.setData(
-                      ClipboardData(text: '${currentStop.latCoords}, ${currentStop.longCoords}'),
+                      ClipboardData(
+                          text: '${currentStop.latCoords}, ${currentStop.longCoords}'),
                     ).then((_) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -239,7 +356,8 @@ class _RouteOrderScreenState extends State<RouteOrderScreen> {
             ElevatedButton.icon(
               onPressed: () async {
                 // Open in maps
-                final url = 'https://www.google.com/maps/search/?api=1&query=${currentStop.latCoords},${currentStop.longCoords}';
+                final url =
+                    'https://www.google.com/maps/search/?api=1&query=${currentStop.latCoords},${currentStop.longCoords}';
                 if (await canLaunch(url)) {
                   await launch(url);
                 } else {
@@ -329,7 +447,8 @@ class _RouteOrderScreenState extends State<RouteOrderScreen> {
     }
 
     try {
-      final stops = await ApiService().fetchRouteOrder(appProvider.routeOrderUrl, appProvider.selectedRoute);
+      final stops = await ApiService().fetchRouteOrder(
+          appProvider.routeOrderUrl, appProvider.selectedRoute);
 
       if (stops.isNotEmpty) {
         routeProvider.setRouteStops(stops, appProvider.selectedRoute);

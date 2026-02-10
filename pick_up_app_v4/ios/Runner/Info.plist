@@ -45,5 +45,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to scan barcodes and take pictures of purchase orders.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs photo library access to save purchase order images.</string>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>fetch</string>
+        <string>remote-notification</string>
+    </array>
 </dict>
 </plist>

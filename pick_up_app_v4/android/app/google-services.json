@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "219065566659",
+    "project_id": "pick-up-form-aa77b",
+    "storage_bucket": "pick-up-form-aa77b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:219065566659:android:a461b33d1ef2e8ad01e976",
+        "android_client_info": {
+          "package_name": "com.doublersharpening.pick_up_app_v4"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAoz65EadTtzvQbhNsdmsNtlrLN78m7cIA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

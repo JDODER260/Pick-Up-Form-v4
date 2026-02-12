@@ -58,10 +58,13 @@ android {
             storePassword = envStorePassword
 
             if (keystoreBase64.isNotEmpty()) {
-                val keystoreFile = File("${project.projectDir}/app/pickup_delivery_release.jks")
+                val keystoreFile = File("${project.projectDir}/pickup_delivery_release.jks")
+
                 if (!keystoreFile.exists()) {
-                    keystoreFile.writeBytes(Base64.getDecoder().decode(keystoreBase64))
+                    val decodedBytes = Base64.getDecoder().decode(keystoreBase64)
+                    keystoreFile.writeBytes(decodedBytes)
                 }
+
                 storeFile = keystoreFile
             }
 
@@ -75,6 +78,7 @@ android {
             }
         }
     }
+
 
     buildTypes {
         getByName("release") {

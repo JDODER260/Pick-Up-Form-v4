@@ -97,10 +97,17 @@ PDF receipt format
 
 API requirements
 ----------------
+
 Example endpoints used by the app (replace with your server URLs):
+
 - Upload PO: `https://doublersharpening.com/api/upload_po/`
 - Company DB: `https://doublersharpening.com/api/company_db/`
 - Delivery API: `https://doublersharpening.com/api/delivery_pos/`
+- Route Order API: `https://doublersharpening.com/api/route_order/`
+- FCM Register API: `https://doublersharpening.com/api/register_fcm/`
+
+**Note:** To access any API code please contact me personally via email: jdswebsite@gmail.com, judah@doublersharpening.com, jdoder@jdswbesites.xyz.
+
 
 Authentication and headers are project-specific; configure in Settings.
 
@@ -117,15 +124,15 @@ Prerequisites: Install Flutter SDK (stable channel) and platform toolchains.
 
 Debug (run on connected device or emulator):
 
-flutter pub get; flutter run
+`flutter pub get`; `flutter run`
 
 Build APK (release):
 
-flutter pub get; flutter build apk --release
+`flutter pub get`; `flutter build apk --release`
 
 Build App Bundle (AAB):
 
-flutter pub get; flutter build appbundle --release
+`flutter pub get`; `flutter build appbundle --release`
 
 Note: For Android signing, configure `android/key.properties` and signingConfigs in the `android` gradle files.
 
@@ -144,9 +151,6 @@ Acknowledgements
 ----------------
 This project is a Flutter rewrite of an earlier app. If you want to contribute or improve features (for example: richer local sync, encryption of stored files, or background download), open an issue or PR.
 
-Changelog
----------
-- 4.0.0 — Flutter cross-platform rewrite; local JSON storage for offline use.
 
 License
 =======

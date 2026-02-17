@@ -58,15 +58,35 @@ class _AddPOScreenState extends State<AddPOScreen> {
     super.dispose();
   }
 
+  // Updated effective description logic:
+  // - Prefer an explicit custom description if present (non-empty)
+  // - Fallback to selected blade if available
+  // - Return empty string if none provided
   String get _effectiveDescription {
+    final custom = _customDescriptionController.text.trim();
+    if (custom.isNotEmpty) {
+      return custom;
+    }
     if (_useCustomDescription) {
-      return _customDescriptionController.text.trim();
+      // If user toggled to custom but left it empty, return empty to fail validation
+      return '';
     }
     return _selectedBlade ?? '';
   }
 
   Future<void> _savePO() async {
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // Ensure we have a description (either selected or custom)
+    if (_effectiveDescription.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please provide a description (select a frequent blade or enter a custom description)'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
 
@@ -85,17 +105,22 @@ class _AddPOScreenState extends State<AddPOScreen> {
 
     final quantity = int.tryParse(_quantityController.text) ?? 0;
 
+    final existingIndex = pickupProvider.editingIndex;
+    final existingPO = existingIndex != null && existingIndex >= 0 && existingIndex < pickupProvider.pos.length
+        ? pickupProvider.pos[existingIndex]
+        : null;
+
     final po = PickupOrder(
-      id: const Uuid().v4(),
+      id: existingPO?.id ?? const Uuid().v4(),
       description: _effectiveDescription,
       company: appProvider.selectedCompany,
       route: appProvider.selectedRoute,
       quantity: quantity,
       pickupDate: DateTime.now(),
       driverId: appProvider.driverId,
-      uploaded: false,
-      bladeDetails: {},
-      createdAt: DateTime.now(),
+      uploaded: existingPO?.uploaded ?? false,
+      bladeDetails: existingPO?.bladeDetails ?? {},
+      createdAt: existingPO?.createdAt ?? DateTime.now(),
     );
 
     if (pickupProvider.editingIndex != null) {
@@ -177,7 +202,7 @@ class _AddPOScreenState extends State<AddPOScreen> {
                       // Frequent blades dropdown
                       if (frequentBlades.isNotEmpty) ...[
                         DropdownButtonFormField<String>(
-                          value: _useCustomDescription ? null : _selectedBlade,
+                          initialValue: _useCustomDescription ? null : _selectedBlade,
                           items: [
                             ...frequentBlades.map((blade) {
                               return DropdownMenuItem(
@@ -195,9 +220,12 @@ class _AddPOScreenState extends State<AddPOScreen> {
                               if (value == '_custom') {
                                 _useCustomDescription = true;
                                 _selectedBlade = null;
+                                // Keep any previously typed custom description
                               } else {
                                 _useCustomDescription = false;
                                 _selectedBlade = value;
+                                // If user picks a frequent blade, clear custom field to avoid stale text
+                                _customDescriptionController.clear();
                               }
                             });
                           },
